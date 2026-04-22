@@ -8,13 +8,15 @@ current_step = 0
 
 # Переводы и известные hex
 translate_colors = {
-    "red": "красный", "blue": "синий", "yellow": "желтый", "purple": "фиолетовый",
-    "#ff0000": "красный", "#0000ff": "синий", "#ffff00": "желтый", "#800080": "фиолетовый"
+    "red": "красный", "blue": "синий", "yellow": "желтый", "purple": "фиолетовый","white": "белый ",
+    "#ff0000": "красный", "#0000ff": "синий", "#ffff00": "желтый", "#800080": "фиолетовый", "#ffffff":"белый "
 }
+
 
 def color_to_russian(color):
     key = color.lower()
     return translate_colors.get(key, key)
+
 
 def start_game(count, seconds, colors):
     for widget in root.winfo_children():
@@ -25,12 +27,13 @@ def start_game(count, seconds, colors):
     user_answers = []
     current_step = 0
 
-    canvas = tk.Canvas(root, width=400, height=400, bg="blue", highlightthickness=0)
+    canvas = tk.Canvas(root, width=400, height=400, bg="white", highlightthickness=0)
     canvas.pack()
 
     shapes_list = ["квадрат", "круг", "треугольник"]
 
     occupied = []
+
     def overlaps(x1, y1, x2, y2):
         for ox1, oy1, ox2, oy2 in occupied:
             if not (x2 < ox1 or x1 > ox2 or y2 < oy1 or y1 > oy2):
@@ -62,12 +65,13 @@ def start_game(count, seconds, colors):
 
     root.after(int(seconds * 1000), lambda: ask_user(canvas))
 
+
 def ask_user(canvas):
     canvas.destroy()
     root.config(bg="red")
 
     global label_ask, entry_answer, btn_next
-    label_ask = tk.Label(root, text=f"Какая была 1-я фигура и её цвет?\n(Напр.: квадрат красный)", 
+    label_ask = tk.Label(root, text=f"Какая была 1-я фигура и её цвет?\n(Напр.: квадрат красный)",
                          bg="red", fg="white", font=("Arial", 12))
     label_ask.pack(pady=20)
 
@@ -77,6 +81,7 @@ def ask_user(canvas):
     btn_next = tk.Button(root, text="Ответить", command=check_answer)
     btn_next.pack(pady=10)
 
+
 def check_answer():
     global current_step
     ans = entry_answer.get().lower().strip()
@@ -85,9 +90,10 @@ def check_answer():
 
     current_step += 1
     if current_step < len(target_shapes):
-        label_ask.config(text=f"Какая была {current_step+1}-я фигура и её цвет?")
+        label_ask.config(text=f"Какая была {current_step + 1}-я фигура и её цвет?")
     else:
         show_result()
+
 
 def show_result():
     for widget in root.winfo_children():
@@ -116,24 +122,28 @@ def show_result():
     percent = int((correct_points / total_elements) * 100) if total_elements > 0 else 0
 
     tk.Label(root, text=f"Результат: {percent}%", bg="red", fg="white", font=("Arial", 25)).pack(pady=20)
-    
+
     answers_frame = tk.Frame(root, bg="red")
     answers_frame.pack(pady=10)
-15:07
-for i, (shape, color_ru, color_orig) in enumerate(target_shapes, start=1):
-        tk.Label(answers_frame, text=f"{i}: {shape}, {color_ru} ({color_orig})", bg="red", fg="white").pack()
 
-    tk.Button(root, text="В меню", command=main_menu).pack(pady=15)
+
+
+for i, (shape, color_ru, color_orig) in enumerate(target_shapes, start=1):
+    tk.Label(answers_frame, text=f"{i}: {shape}, {color_ru} ({color_orig})", bg="red", fg="white").pack()
+
+
+
 
 def main_menu():
     for widget in root.winfo_children():
         widget.destroy()
-    root.config(bg="blue")
+    root.config(bg="white")
 
     frame = tk.Frame(root, bg="blue")
     frame.pack(expand=True)
     start_button = tk.Button(frame, text="Старт", bg="white", font=("Arial", 14), command=difficulty_screen)
     start_button.pack()
+
 
 def difficulty_screen():
     for widget in root.winfo_children():
@@ -154,6 +164,7 @@ def difficulty_screen():
     tk.Button(frame, text="Сложный (4 фиг, 6 сек)", bg="red", fg="white", width=25,
               command=lambda: start_game(4, 6, c_hard)).pack(pady=6)
 
+
 # --- ЗАПУСК ---
 root = tk.Tk()
 root.title("Memory Game")
@@ -161,7 +172,7 @@ root.geometry("400x450")
 root.resizable(False, False)
 main_menu()
 root.mainloop()
-15:07
+
 
 
 
