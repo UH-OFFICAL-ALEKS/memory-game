@@ -1,24 +1,35 @@
 import tkinter as tk
 import random
 
-# --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
+# ==================== НАСТРОЙКИ СТИЛЯ ====================
+ORANGE_BG = "#FFB347"      # мягкий тёплый оранжевый
+
+# ШРИФТЫ (можно менять на любые)
+FONT_TITLE = ("Comic Sans MS", 20, "bold")      # для заголовков
+FONT_BUTTON = ("Verdana", 12, "bold")           # для кнопок
+FONT_QUESTION = ("Arial", 14, "bold")           # для вопросов
+FONT_RESULT = ("Segoe UI", 28, "bold")          # для процента результата
+FONT_ANSWER = ("Courier New", 12)               # для списка правильных ответов
+FONT_MENU = ("Georgia", 14, "bold")             # для текста в меню
+
+# ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
 target_shapes = []  # [(shape_ru, color_ru, color_orig), ...]
 user_answers = []
 current_step = 0
 
-# Переводы и известные hex
+# Словарь для перевода цветов
 translate_colors = {
-    "red": "красный", "blue": "синий", "yellow": "желтый", "purple": "фиолетовый","white": "белый ",
-    "#ff0000": "красный", "#0000ff": "синий", "#ffff00": "желтый", "#800080": "фиолетовый", "#ffffff":"белый "
+    "red": "красный", "blue": "синий", "yellow": "желтый", "purple": "фиолетовый",
+    "#ff0000": "красный", "#0000ff": "синий", "#ffff00": "желтый", "#800080": "фиолетовый"
 }
 
-
 def color_to_russian(color):
+    """Переводит английское название цвета или HEX-код в русское название"""
     key = color.lower()
     return translate_colors.get(key, key)
 
-
 def start_game(count, seconds, colors):
+    """Запускает игру: создаёт окно с фигурами"""
     for widget in root.winfo_children():
         widget.destroy()
 
@@ -27,14 +38,15 @@ def start_game(count, seconds, colors):
     user_answers = []
     current_step = 0
 
-    canvas = tk.Canvas(root, width=400, height=400, bg="white", highlightthickness=0)
+    # Холст с оранжевым фоном
+    canvas = tk.Canvas(root, width=400, height=400, bg=ORANGE_BG, highlightthickness=0)
     canvas.pack()
 
     shapes_list = ["квадрат", "круг", "треугольник"]
 
     occupied = []
-
     def overlaps(x1, y1, x2, y2):
+        """Проверяет, пересекается ли новая фигура с уже существующими"""
         for ox1, oy1, ox2, oy2 in occupied:
             if not (x2 < ox1 or x1 > ox2 or y2 < oy1 or y1 > oy2):
                 return True
@@ -65,24 +77,25 @@ def start_game(count, seconds, colors):
 
     root.after(int(seconds * 1000), lambda: ask_user(canvas))
 
-
 def ask_user(canvas):
+    """Удаляет холст с фигурами и показывает интерфейс для ввода ответов"""
     canvas.destroy()
-    root.config(bg="red")
+    root.config(bg=ORANGE_BG)
 
     global label_ask, entry_answer, btn_next
-    label_ask = tk.Label(root, text=f"Какая была 1-я фигура и её цвет?\n(Напр.: квадрат красный)",
-                         bg="red", fg="white", font=("Arial", 12))
+    label_ask = tk.Label(root, text=f"Какая была 1-я фигура и её цвет?\n(Напр.: квадрат красный)", 
+                         bg=ORANGE_BG, fg="white", font=FONT_QUESTION)
     label_ask.pack(pady=20)
 
-    entry_answer = tk.Entry(root, width=30)
+    entry_answer = tk.Entry(root, width=30, font=FONT_BUTTON)
     entry_answer.pack(pady=10)
 
-    btn_next = tk.Button(root, text="Ответить", command=check_answer)
+    btn_next = tk.Button(root, text="Ответить", font=FONT_BUTTON, command=check_answer,
+                         bd=0, highlightthickness=0)
     btn_next.pack(pady=10)
 
-
 def check_answer():
+    """Проверяет ответ пользователя и переходит к следующему вопросу"""
     global current_step
     ans = entry_answer.get().lower().strip()
     user_answers.append(ans)
@@ -90,12 +103,12 @@ def check_answer():
 
     current_step += 1
     if current_step < len(target_shapes):
-        label_ask.config(text=f"Какая была {current_step + 1}-я фигура и её цвет?")
+        label_ask.config(text=f"Какая была {current_step+1}-я фигура и её цвет?")
     else:
         show_result()
 
-
 def show_result():
+    """Показывает результат игры: процент правильных ответов и список правильных фигур"""
     for widget in root.winfo_children():
         widget.destroy()
 
@@ -104,10 +117,8 @@ def show_result():
 
     for i, (true_shape, true_color_ru, true_color_orig) in enumerate(target_shapes):
         user_ans = user_answers[i] if i < len(user_answers) else ""
-        # проверка формы
         if true_shape in user_ans:
             correct_points += 1
-        # проверка цвета
         color_ok = False
         if true_color_ru in user_ans:
             color_ok = True
@@ -121,60 +132,64 @@ def show_result():
 
     percent = int((correct_points / total_elements) * 100) if total_elements > 0 else 0
 
-    tk.Label(root, text=f"Результат: {percent}%", bg="red", fg="white", font=("Arial", 25)).pack(pady=20)
+    tk.Label(root, text=f"Результат: {percent}%", bg=ORANGE_BG, fg="white", font=FONT_RESULT).pack(pady=20)
 
-    answers_frame = tk.Frame(root, bg="red")
+    answers_frame = tk.Frame(root, bg=ORANGE_BG)
     answers_frame.pack(pady=10)
+    for i, (shape, color_ru, color_orig) in enumerate(target_shapes, start=1):
+        tk.Label(answers_frame, text=f"{i}: {shape}, {color_ru} ({color_orig})",
+                 bg=ORANGE_BG, fg="white", font=FONT_ANSWER).pack()
 
-
-
-for i, (shape, color_ru, color_orig) in enumerate(target_shapes, start=1):
-    tk.Label(answers_frame, text=f"{i}: {shape}, {color_ru} ({color_orig})", bg="red", fg="white").pack()
-
-
+    tk.Button(root, text="В меню", font=FONT_BUTTON, command=main_menu,
+              bd=0, highlightthickness=0).pack(pady=15)
 
 
 def main_menu():
+    """Главное меню игры"""
     for widget in root.winfo_children():
         widget.destroy()
-    root.config(bg="white")
+    root.config(bg=ORANGE_BG)
 
-    frame = tk.Frame(root, bg="blue")
+    frame = tk.Frame(root, bg=ORANGE_BG)
     frame.pack(expand=True)
-    start_button = tk.Button(frame, text="Старт", bg="white", font=("Arial", 14), command=difficulty_screen)
-    start_button.pack()
+
+    title = tk.Label(frame, text="🧠 MEMORY GAME", bg=ORANGE_BG, fg="white", font=FONT_TITLE)
+    title.pack(pady=30)
+
+    # Кнопка без чёрной обводки
+    start_button = tk.Button(frame, text="Старт", bg="white", font=FONT_MENU, command=difficulty_screen,
+                             bd=0, highlightthickness=0, activebackground="white")
+    start_button.pack(pady=20)
 
 
 def difficulty_screen():
+    """Экран выбора уровня сложности"""
     for widget in root.winfo_children():
         widget.destroy()
-    root.config(bg="blue")
+    root.config(bg=ORANGE_BG)
 
-    frame = tk.Frame(root, bg="blue")
+    frame = tk.Frame(root, bg=ORANGE_BG)
     frame.pack(expand=True, pady=20)
 
     c_std = ["red", "blue", "yellow"]
     c_hard = ["red", "blue", "yellow", "purple"]
 
-    tk.Label(frame, text="Выберите сложность:", bg="blue", fg="white", font=("Arial", 14)).pack(pady=5)
-    tk.Button(frame, text="Простой (2 фиг, 10 сек)", bg="green", fg="white", width=25,
-              command=lambda: start_game(2, 10, c_std)).pack(pady=6)
-    tk.Button(frame, text="Средний (3 фиг, 8 сек)", bg="yellow", fg="black", width=25,
-              command=lambda: start_game(3, 8, c_std)).pack(pady=6)
-    tk.Button(frame, text="Сложный (4 фиг, 6 сек)", bg="red", fg="white", width=25,
-              command=lambda: start_game(4, 6, c_hard)).pack(pady=6)
+    tk.Label(frame, text="Выберите сложность:", bg=ORANGE_BG, fg="white", font=FONT_QUESTION).pack(pady=5)
+
+    tk.Button(frame, text="Простой (2 фиг, 10 сек)", bg="green", fg="white", width=25, font=FONT_BUTTON,
+              command=lambda: start_game(2, 10, c_std), bd=0, highlightthickness=0).pack(pady=6)
+
+    tk.Button(frame, text="Средний (3 фиг, 8 сек)", bg="yellow", fg="black", width=25, font=FONT_BUTTON,
+              command=lambda: start_game(3, 8, c_std), bd=0, highlightthickness=0).pack(pady=6)
+
+    tk.Button(frame, text="Сложный (4 фиг, 6 сек)", bg="red", fg="white", width=25, font=FONT_BUTTON,
+              command=lambda: start_game(4, 6, c_hard), bd=0, highlightthickness=0).pack(pady=6)
 
 
-# --- ЗАПУСК ---
+# ==================== ЗАПУСК ====================
 root = tk.Tk()
 root.title("Memory Game")
 root.geometry("400x450")
 root.resizable(False, False)
 main_menu()
 root.mainloop()
-
-
-
-
-
-
